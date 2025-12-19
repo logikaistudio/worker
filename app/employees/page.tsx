@@ -140,82 +140,93 @@ export default function EmployeesPage() {
                     </div>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-3">
                     {filteredEmployees.map(employee => (
-                        <Card key={employee.id} variant="elevated" className="p-6">
-                            <div className="space-y-4">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900">{employee.name}</h3>
-                                        <p className="text-sm text-gray-600">{employee.employeeId}</p>
-                                    </div>
-                                    <Badge variant={employee.status === 'active' ? 'success' : 'default'}>
-                                        {employee.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
-                                    </Badge>
-                                </div>
+                        <Card key={employee.id} variant="elevated" className="hover:shadow-lg smooth-transition">
+                            <div className="p-4">
+                                <div className="flex items-center gap-4">
+                                    {/* Employee Info - Left */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="text-lg font-semibold text-gray-900">{employee.name}</h3>
+                                                    <Badge variant={employee.status === 'active' ? 'success' : 'default'}>
+                                                        {employee.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+                                                    </Badge>
+                                                    {employee.isApprover && (
+                                                        <Badge variant="info">
+                                                            Approver
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-gray-600 mt-1">{employee.employeeId}</p>
+                                            </div>
+                                        </div>
 
-                                <div className="space-y-2">
-                                    <div>
-                                        <p className="text-xs text-gray-500">Posisi</p>
-                                        <p className="text-sm font-medium text-gray-900">{employee.position}</p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                                            <div>
+                                                <p className="text-xs text-gray-500">Posisi</p>
+                                                <p className="text-sm font-medium text-gray-900">{employee.position}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Departemen</p>
+                                                <p className="text-sm font-medium text-gray-900">{employee.department}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Sisa Cuti</p>
+                                                <p className="text-sm font-medium text-primary-600">
+                                                    {employee.remainingLeaveQuota} / {employee.annualLeaveQuota} hari
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Gaji Pokok</p>
+                                                <p className="text-sm font-semibold text-primary-600">
+                                                    {formatCurrency(employee.basicSalary)}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Departemen</p>
-                                        <p className="text-sm font-medium text-gray-900">{employee.department}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Sisa Cuti</p>
-                                        <p className="text-sm font-medium text-primary-600">
-                                            {employee.remainingLeaveQuota} / {employee.annualLeaveQuota} hari
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Gaji Pokok</p>
-                                        <p className="text-sm font-semibold text-primary-600">
-                                            {formatCurrency(employee.basicSalary)}
-                                        </p>
-                                    </div>
-                                </div>
 
-                                <div className="pt-4 border-t flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleEditEmployee(employee)}
-                                        className="flex-1 flex items-center justify-center gap-1"
-                                    >
-                                        <Edit size={16} />
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setViewPayrollEmployee(employee)}
-                                        className="flex-1 flex items-center justify-center gap-1"
-                                    >
-                                        <Wallet size={16} />
-                                        Slip Gaji
-                                    </Button>
-                                    {employee.latestPayrollId && (
-                                        <Button
-                                            size="sm"
-                                            variant="primary"
-                                            onClick={() => setViewLatestPayroll(employee.latestPayrollId!)}
-                                            className="flex-1 flex items-center justify-center gap-1"
-                                            title="Lihat slip gaji terakhir"
-                                        >
-                                            <Receipt size={16} />
-                                            Slip Terakhir
-                                        </Button>
-                                    )}
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setSelectedEmployee(employee.id)}
-                                        className="flex-shrink-0"
-                                    >
-                                        <FileText size={16} />
-                                    </Button>
+                                    {/* Action Buttons - Right */}
+                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleEditEmployee(employee)}
+                                                title="Edit"
+                                            >
+                                                <Edit size={16} />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setViewPayrollEmployee(employee)}
+                                                title="Slip Gaji"
+                                            >
+                                                <Wallet size={16} />
+                                            </Button>
+                                            {employee.latestPayrollId && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    onClick={() => setViewLatestPayroll(employee.latestPayrollId!)}
+                                                    title="Slip Terakhir"
+                                                >
+                                                    <Receipt size={16} />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => setSelectedEmployee(employee.id)}
+                                                title="Cetak"
+                                            >
+                                                <FileText size={16} />
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </Card>
