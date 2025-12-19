@@ -22,13 +22,14 @@ const LeaveApprovalFlow: React.FC<LeaveApprovalFlowProps> = ({ request }) => {
     };
 
     const getStatusBadge = (status: string) => {
+        const labels = statusLabels as Record<string, string>;
         switch (status) {
             case 'approved':
-                return <Badge variant="success">{statusLabels[status]}</Badge>;
+                return <Badge variant="success">{labels[status]}</Badge>;
             case 'rejected':
-                return <Badge variant="danger">{statusLabels[status]}</Badge>;
+                return <Badge variant="danger">{labels[status]}</Badge>;
             default:
-                return <Badge variant="warning">{statusLabels[status]}</Badge>;
+                return <Badge variant="warning">{labels[status]}</Badge>;
         }
     };
 
