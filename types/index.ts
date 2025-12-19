@@ -14,10 +14,13 @@ export interface Employee {
         meal: number;
         other: number;
     };
+    customAllowances?: { name: string; amount: number }[]; // Custom allowance items
+    customDeductions?: { name: string; amount: number }[]; // Custom deduction items
     annualLeaveQuota: number; // Total annual leave days per year (e.g., 12)
     usedLeaveQuota: number; // Number of days used
     remainingLeaveQuota: number; // Calculated: annualLeaveQuota - usedLeaveQuota
     hierarchyLevel: number; // 1=Staff, 2=Supervisor, 3=Manager, 4=Director, 5=C-Level
+    isApprover: boolean; // Can this employee approve leave requests?
     latestPayrollId?: string; // Link to latest payroll record
     status: 'active' | 'inactive';
 }

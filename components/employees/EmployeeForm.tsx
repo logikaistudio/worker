@@ -36,8 +36,17 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
         otherAllowance: employee?.allowances?.other ? formatCurrencyInput(employee.allowances.other.toString()) : '',
         annualLeaveQuota: employee?.annualLeaveQuota?.toString() || '12',
         hierarchyLevel: employee?.hierarchyLevel?.toString() || '1',
+        isApprover: employee?.isApprover || false,
         status: employee?.status || 'active' as 'active' | 'inactive',
     });
+
+    const [customAllowances, setCustomAllowances] = useState<{ name: string; amount: string }[]>(
+        employee?.customAllowances?.map(a => ({ name: a.name, amount: formatCurrencyInput(a.amount.toString()) })) || []
+    );
+
+    const [customDeductions, setCustomDeductions] = useState<{ name: string; amount: string }[]>(
+        employee?.customDeductions?.map(d => ({ name: d.name, amount: formatCurrencyInput(d.amount.toString()) })) || []
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,10 +67,18 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
                 meal: parseCurrencyInput(formData.mealAllowance),
                 other: parseCurrencyInput(formData.otherAllowance),
             },
+            customAllowances: customAllowances.length > 0
+                ? customAllowances.map(a => ({ name: a.name, amount: parseCurrencyInput(a.amount) }))
+                : undefined,
+            customDeductions: customDeductions.length > 0
+                ? customDeductions.map(d => ({ name: d.name, amount: parseCurrencyInput(d.amount) }))
+                : undefined,
             annualLeaveQuota: parseInt(formData.annualLeaveQuota),
             usedLeaveQuota: employee?.usedLeaveQuota || 0,
             remainingLeaveQuota: parseInt(formData.annualLeaveQuota) - (employee?.usedLeaveQuota || 0),
             hierarchyLevel: parseInt(formData.hierarchyLevel),
+            isApprover: formData.isApprover,
+            latestPayrollId: employee?.latestPayrollId,
             status: formData.status,
         };
 
@@ -222,9 +239,27 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
                             <option value="1">1 - Staff</option>
                             <option value="2">2 - Supervisor</option>
                             <option value="3">3 - Manager</option>
-                            <option value="4">4 - Director</option>
+                            <option value="4">4 - Senior Manager / Director</option>
                             <option value="5">5 - C-Level</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Status Approver
+                        </label>
+                        <div className="flex items-center gap-3 pt-2">
+                            <input
+                                type="checkbox"
+                                id="isApprover"
+                                checked={formData.isApprover}
+                                onChange={(e) => setFormData({ ...formData, isApprover: e.target.checked })}
+                                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500"
+                            />
+                            <label htmlFor="isApprover" className="text-sm text-gray-700 cursor-pointer">
+                                Dapat menyetujui cuti karyawan
+                            </label>
+                        </div>
                     </div>
 
                     <div>
@@ -306,16 +341,122 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
+            {/* Custom Allowances */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Tunjangan Tambahan (Optional)</h3>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCustomAllowances([...customAllowances, { name: '', amount: '' }])}
+                    >
+                        + Tambah Item
+                    </Button>
+                </div>
+                {customAllowances.length > 0 && (
+                    <div className="space-y-3">
+                        {customAllowances.map((item, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(e) => {
+                                        const updated = [...customAllowances];
+                                        updated[index].name = e.target.value;
+                                        setCustomAllowances(updated);
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Nama tunjangan (e.g., Bonus Project)"
+                                />
+                                <input
+                                    type="text"
+                                    value={item.amount}
+                                    onChange={(e) => {
+                                        const updated = [...customAllowances];
+                                        updated[index].amount = formatCurrencyInput(e.target.value);
+                                        setCustomAllowances(updated);
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Jumlah (e.g., 1.000.000)"
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="danger"
+                                    onClick={() => setCustomAllowances(customAllowances.filter((_, i) => i !== index))}
+                                >
+                                    Hapus
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Custom Deductions */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Potongan Tambahan (Optional)</h3>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCustomDeductions([...customDeductions, { name: '', amount: '' }])}
+                    >
+                        + Tambah Item
+                    </Button>
+                </div>
+                {customDeductions.length > 0 && (
+                    <div className="space-y-3">
+                        {customDeductions.map((item, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(e) => {
+                                        const updated = [...customDeductions];
+                                        updated[index].name = e.target.value;
+                                        setCustomDeductions(updated);
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Nama potongan (e.g., Denda)"
+                                />
+                                <input
+                                    type="text"
+                                    value={item.amount}
+                                    onChange={(e) => {
+                                        const updated = [...customDeductions];
+                                        updated[index].amount = formatCurrencyInput(e.target.value);
+                                        setCustomDeductions(updated);
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Jumlah (e.g., 500.000)"
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="danger"
+                                    onClick={() => setCustomDeductions(customDeductions.filter((_, i) => i !== index))}
+                                >
+                                    Hapus
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Submit Buttons */}
+            <div className="flex gap-4 pt-6 border-t">
+                <Button type="submit" variant="primary" className="flex-1">
+                    {isEditMode ? 'Update' : 'Simpan'}
+                </Button>
                 {onCancel && (
-                    <Button type="button" variant="secondary" onClick={onCancel}>
+                    <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
                         Batal
                     </Button>
                 )}
-                <Button type="submit" variant="primary" size="lg">
-                    {isEditMode ? 'Update Data' : 'Tambah Karyawan'}
-                </Button>
             </div>
         </form>
     );

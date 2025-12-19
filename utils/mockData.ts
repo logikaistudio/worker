@@ -21,6 +21,7 @@ export const mockEmployees: Employee[] = [
         usedLeaveQuota: 3,
         remainingLeaveQuota: 9,
         hierarchyLevel: 2, // Supervisor
+        isApprover: true, // Can approve leave requests
         latestPayrollId: undefined,
         status: 'active',
     },
@@ -44,6 +45,7 @@ export const mockEmployees: Employee[] = [
         usedLeaveQuota: 0,
         remainingLeaveQuota: 12,
         hierarchyLevel: 3, // Manager
+        isApprover: true, // Can approve leave requests
         latestPayrollId: undefined,
         status: 'active',
     },
@@ -67,6 +69,7 @@ export const mockEmployees: Employee[] = [
         usedLeaveQuota: 0,
         remainingLeaveQuota: 12,
         hierarchyLevel: 1, // Staff
+        isApprover: false, // Cannot approve leave requests
         latestPayrollId: undefined,
         status: 'active',
     },
