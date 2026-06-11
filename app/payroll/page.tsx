@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { PayrollRecord } from '@/types';
-import { calculateNetSalary } from '@/utils/payrollHelpers';
+import { calculateNetSalaryComplete } from '@/utils/payrollHelpers';
 import { getTotalOvertimeHours } from '@/utils/overtimeHelpers';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -14,7 +14,7 @@ import PayrollEditForm from '@/components/payroll/PayrollEditForm';
 import { Wallet, Plus, Printer, DollarSign, Edit } from 'lucide-react';
 
 export default function PayrollPage() {
-    const { employees, payrollRecords, dailyAttendance, addPayrollRecord, updatePayrollRecord, updateEmployee } = useData();
+    const { employees, payrollRecords, dailyAttendance, addPayrollRecord, updatePayrollRecord, updateEmployee, companySettings } = useData();
     const [showPrintModal, setShowPrintModal] = useState<string | null>(null);
     const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
     const [generating, setGenerating] = useState(false);
@@ -46,11 +46,18 @@ export default function PayrollPage() {
                     currentPeriod
                 );
 
-                const calculation = calculateNetSalary(
+                const calculation = calculateNetSalaryComplete(
                     employee.basicSalary,
                     employee.allowances,
-                    0,
-                    overtimeHours
+                    employee.maritalStatus || 'TK',
+                    overtimeHours,
+                    employee.customAllowances || [],
+                    employee.customDeductions || [],
+                    0, // loan
+                    0, // other deductions
+                    false, // thr
+                    12, // months worked
+                    companySettings
                 );
 
                 const record: PayrollRecord = {
@@ -60,11 +67,22 @@ export default function PayrollPage() {
                     period: currentPeriod,
                     basicSalary: employee.basicSalary,
                     allowances: employee.allowances,
+                    customAllowances: employee.customAllowances,
+                    customDeductions: employee.customDeductions,
                     overtimeHours,
                     overtimeRate: calculation.overtimeRate,
                     overtimePay: calculation.overtimePay,
-                    bpjsKesehatan: calculation.bpjsKesehatan,
-                    bpjsKetenagakerjaan: calculation.bpjsKetenagakerjaan,
+                    bpjsKesehatan: calculation.bpjs.bpjsKesEmployee,
+                    bpjsKetenagakerjaan: calculation.bpjs.bpjsJhtEmployee + calculation.bpjs.bpjsJpEmployee,
+                    bpjsJhtEmployee: calculation.bpjs.bpjsJhtEmployee,
+                    bpjsJpEmployee: calculation.bpjs.bpjsJpEmployee,
+                    bpjsKesEmployer: calculation.bpjs.bpjsKesEmployer,
+                    bpjsJhtEmployer: calculation.bpjs.bpjsJhtEmployer,
+                    bpjsJkkEmployer: calculation.bpjs.bpjsJkkEmployer,
+                    bpjsJkmEmployer: calculation.bpjs.bpjsJkmEmployer,
+                    bpjsJpEmployer: calculation.bpjs.bpjsJpEmployer,
+                    ptkpStatus: employee.maritalStatus || 'TK',
+                    biayaJabatan: calculation.biayaJabatan,
                     tax: calculation.tax,
                     otherDeductions: 0,
                     grossSalary: calculation.grossSalary,

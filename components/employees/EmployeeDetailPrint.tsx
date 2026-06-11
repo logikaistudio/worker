@@ -1,5 +1,6 @@
 import React from 'react';
 import { Employee } from '@/types';
+import { computeTenure, isExpiringSoon } from '@/utils/employeeHelpers';
 
 interface EmployeeDetailPrintProps {
     employee: Employee;
@@ -74,10 +75,53 @@ const EmployeeDetailPrint: React.FC<EmployeeDetailPrintProps> = ({ employee }) =
                         <p className="font-semibold text-gray-900">{formatDate(employee.joinDate)}</p>
                     </div>
                     <div>
+                        <p className="text-sm text-gray-600">Masa Kerja:</p>
+                        {employee.joinDate ? (
+                            (() => {
+                                const t = computeTenure(employee.joinDate);
+                                return <p className="font-semibold text-gray-900">{t.years} tahun, {t.months} bulan</p>;
+                            })()
+                        ) : (
+                            <p className="font-semibold text-gray-900">-</p>
+                        )}
+                    </div>
+                    <div>
                         <p className="text-sm text-gray-600">Status:</p>
                         <p className={`font-semibold ${employee.status === 'active' ? 'text-success-600' : 'text-danger-600'}`}>
                             {employee.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Competencies */}
+            <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3 bg-gray-100 p-2">KOMPETENSI</h3>
+                <div className="grid grid-cols-1 gap-4">
+                    <div>
+                        <p className="text-sm text-gray-600">Skills</p>
+                        <p className="font-semibold text-gray-900">{employee.skills?.map(s => `${s.name} (${s.level || 'n/a'})`).join(', ') || '-'}</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Pelatihan</p>
+                        <p className="font-semibold text-gray-900">{employee.trainings?.map(t => t.name).join(', ') || '-'}</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Sertifikat</p>
+                        <div className="font-semibold text-gray-900">
+                            {employee.certificates && employee.certificates.length > 0 ? (
+                                <ul className="list-disc ml-6">
+                                    {employee.certificates.map((c, idx) => (
+                                        <li key={idx}>
+                                            {c.name} - {c.issuedBy || '-'} {c.expiryDate ? `(exp: ${new Date(c.expiryDate).toLocaleDateString('id-ID')})` : ''}
+                                            {isExpiringSoon(c.expiryDate) && <span className="text-sm text-warning-600"> — expiring soon</span>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                '-'
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

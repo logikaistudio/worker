@@ -81,14 +81,33 @@ const PayrollSlipPrint: React.FC<PayrollSlipPrintProps> = ({ record }) => {
                             <td className="py-2">BPJS Kesehatan (1%)</td>
                             <td className="text-right font-mono">{formatCurrency(record.bpjsKesehatan)}</td>
                         </tr>
-                        <tr>
-                            <td className="py-2">BPJS Ketenagakerjaan (2%)</td>
-                            <td className="text-right font-mono">{formatCurrency(record.bpjsKetenagakerjaan)}</td>
-                        </tr>
+                        {record.bpjsJhtEmployee !== undefined ? (
+                            <>
+                                <tr>
+                                    <td className="py-2">BPJS JHT (2%)</td>
+                                    <td className="text-right font-mono">{formatCurrency(record.bpjsJhtEmployee)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="py-2">BPJS JP (1%)</td>
+                                    <td className="text-right font-mono">{formatCurrency(record.bpjsJpEmployee || 0)}</td>
+                                </tr>
+                            </>
+                        ) : (
+                            <tr>
+                                <td className="py-2">BPJS Ketenagakerjaan</td>
+                                <td className="text-right font-mono">{formatCurrency(record.bpjsKetenagakerjaan)}</td>
+                            </tr>
+                        )}
                         <tr>
                             <td className="py-2">Pajak Penghasilan (PPh 21)</td>
                             <td className="text-right font-mono">{formatCurrency(record.tax)}</td>
                         </tr>
+                        {record.customDeductions?.map((d, idx) => (
+                            <tr key={idx}>
+                                <td className="py-2">{d.name}</td>
+                                <td className="text-right font-mono">{formatCurrency(d.amount)}</td>
+                            </tr>
+                        ))}
                         {record.otherDeductions > 0 && (
                             <tr>
                                 <td className="py-2">Potongan Lainnya</td>

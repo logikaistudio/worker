@@ -1,5 +1,6 @@
 import React from 'react';
 import { Employee } from '@/types';
+import { computeTenure, isExpiringSoon } from '@/utils/employeeHelpers';
 
 interface EmployeeSummaryPrintProps {
     employees: Employee[];
@@ -91,7 +92,9 @@ const EmployeeSummaryPrint: React.FC<EmployeeSummaryPrintProps> = ({ employees }
                             <th className="text-left p-2">Nama</th>
                             <th className="text-left p-2">Posisi</th>
                             <th className="text-left p-2">Departemen</th>
+                            <th className="text-left p-2">Masa Kerja</th>
                             <th className="text-right p-2">Gaji Pokok</th>
+                            <th className="text-center p-2">Sertifikat (expiring)</th>
                             <th className="text-center p-2">Status</th>
                         </tr>
                     </thead>
@@ -102,8 +105,12 @@ const EmployeeSummaryPrint: React.FC<EmployeeSummaryPrintProps> = ({ employees }
                                 <td className="p-2">{emp.name}</td>
                                 <td className="p-2">{emp.position}</td>
                                 <td className="p-2">{emp.department}</td>
-                                <td className="text-right p-2 font-mono text-xs">
-                                    {formatCurrency(emp.basicSalary)}
+                                <td className="p-2">
+                                    {emp.joinDate ? (() => { const t = computeTenure(emp.joinDate); return `${t.years}y ${t.months}m`; })() : '-'}
+                                </td>
+                                <td className="text-right p-2 font-mono text-xs">{formatCurrency(emp.basicSalary)}</td>
+                                <td className="text-center p-2">
+                                    {emp.certificates ? emp.certificates.filter(c => isExpiringSoon(c.expiryDate)).length : 0}
                                 </td>
                                 <td className="text-center p-2">
                                     <span className={emp.status === 'active' ? 'font-semibold' : 'text-gray-500'}>

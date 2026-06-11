@@ -48,6 +48,18 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
         employee?.customDeductions?.map(d => ({ name: d.name, amount: formatCurrencyInput(d.amount.toString()) })) || []
     );
 
+    const [skills, setSkills] = useState<{ name: string; level?: string }[]>(
+        employee?.skills?.map(s => ({ name: s.name, level: s.level })) || []
+    );
+
+    const [trainings, setTrainings] = useState<{ id?: string; name: string; provider?: string; startDate?: string; endDate?: string; status?: string }[]>(
+        employee?.trainings?.map(t => ({ id: t.id, name: t.name, provider: t.provider, startDate: t.startDate, endDate: t.endDate, status: t.status })) || []
+    );
+
+    const [certificates, setCertificates] = useState<{ id?: string; name: string; issuedBy?: string; issueDate?: string; expiryDate?: string }[]>(
+        employee?.certificates?.map(c => ({ id: c.id, name: c.name, issuedBy: c.issuedBy, issueDate: c.issueDate, expiryDate: c.expiryDate || undefined })) || []
+    );
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -79,6 +91,9 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
             hierarchyLevel: parseInt(formData.hierarchyLevel),
             isApprover: formData.isApprover,
             latestPayrollId: employee?.latestPayrollId,
+            skills: skills.length > 0 ? skills.map(s => ({ name: s.name, level: s.level as any })) : undefined,
+            trainings: trainings.length > 0 ? trainings.map(t => ({ id: t.id, name: t.name, provider: t.provider, startDate: t.startDate, endDate: t.endDate, status: t.status as any })) : undefined,
+            certificates: certificates.length > 0 ? certificates.map(c => ({ id: c.id, name: c.name, issuedBy: c.issuedBy, issueDate: c.issueDate, expiryDate: c.expiryDate || null })) : undefined,
             status: formData.status,
         };
 
@@ -448,6 +463,82 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSuccess, onCanc
             </div>
 
             {/* Submit Buttons */}
+            {/* Competencies */}
+            <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Kompetensi</h3>
+
+                {/* Skills */}
+                <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">Keahlian (Skills)</h4>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setSkills([...skills, { name: '', level: 'beginner' }])}>
+                            + Tambah Skill
+                        </Button>
+                    </div>
+                    {skills.map((s, i) => (
+                        <div key={i} className="flex gap-2 mb-2">
+                            <input type="text" value={s.name} onChange={(e) => {
+                                const copy = [...skills]; copy[i].name = e.target.value; setSkills(copy);
+                            }} placeholder="Nama skill" className="flex-1 px-3 py-2 border rounded" />
+                            <select value={s.level} onChange={(e) => {
+                                const copy = [...skills]; copy[i].level = e.target.value; setSkills(copy);
+                            }} className="w-40 px-3 py-2 border rounded">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                            <Button type="button" size="sm" variant="danger" onClick={() => setSkills(skills.filter((_, idx) => idx !== i))}>Hapus</Button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Trainings */}
+                <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">Pelatihan / Training</h4>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setTrainings([...trainings, { name: '', provider: '', startDate: '', endDate: '', status: 'planned' }])}>
+                            + Tambah Training
+                        </Button>
+                    </div>
+                    {trainings.map((t, i) => (
+                        <div key={i} className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+                            <input type="text" value={t.name} onChange={(e) => { const c = [...trainings]; c[i].name = e.target.value; setTrainings(c); }} placeholder="Nama pelatihan" className="px-3 py-2 border rounded md:col-span-2" />
+                            <input type="text" value={t.provider} onChange={(e) => { const c = [...trainings]; c[i].provider = e.target.value; setTrainings(c); }} placeholder="Penyelenggara" className="px-3 py-2 border rounded" />
+                            <select value={t.status} onChange={(e) => { const c = [...trainings]; c[i].status = e.target.value; setTrainings(c); }} className="px-3 py-2 border rounded">
+                                <option value="planned">Planned</option>
+                                <option value="ongoing">Ongoing</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <div className="md:col-span-4 flex gap-2">
+                                <input type="date" value={t.startDate || ''} onChange={(e) => { const c = [...trainings]; c[i].startDate = e.target.value; setTrainings(c); }} className="px-3 py-2 border rounded" />
+                                <input type="date" value={t.endDate || ''} onChange={(e) => { const c = [...trainings]; c[i].endDate = e.target.value; setTrainings(c); }} className="px-3 py-2 border rounded" />
+                                <Button type="button" size="sm" variant="danger" onClick={() => setTrainings(trainings.filter((_, idx) => idx !== i))}>Hapus</Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Certificates */}
+                <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">Sertifikat</h4>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCertificates([...certificates, { name: '', issuedBy: '', issueDate: '', expiryDate: '' }])}>
+                            + Tambah Sertifikat
+                        </Button>
+                    </div>
+                    {certificates.map((c, i) => (
+                        <div key={i} className="flex gap-2 mb-2">
+                            <input type="text" value={c.name} onChange={(e) => { const cp = [...certificates]; cp[i].name = e.target.value; setCertificates(cp); }} placeholder="Nama sertifikat" className="flex-1 px-3 py-2 border rounded" />
+                            <input type="text" value={c.issuedBy} onChange={(e) => { const cp = [...certificates]; cp[i].issuedBy = e.target.value; setCertificates(cp); }} placeholder="Diterbitkan oleh" className="w-56 px-3 py-2 border rounded" />
+                            <input type="date" value={c.issueDate || ''} onChange={(e) => { const cp = [...certificates]; cp[i].issueDate = e.target.value; setCertificates(cp); }} className="px-3 py-2 border rounded" />
+                            <input type="date" value={c.expiryDate || ''} onChange={(e) => { const cp = [...certificates]; cp[i].expiryDate = e.target.value; setCertificates(cp); }} className="px-3 py-2 border rounded" />
+                            <Button type="button" size="sm" variant="danger" onClick={() => setCertificates(certificates.filter((_, idx) => idx !== i))}>Hapus</Button>
+                        </div>
+                    ))}
+                </div>
+            </div>
             <div className="flex gap-4 pt-6 border-t">
                 <Button type="submit" variant="primary" className="flex-1">
                     {isEditMode ? 'Update' : 'Simpan'}
